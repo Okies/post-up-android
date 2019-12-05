@@ -24,8 +24,15 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GetTokenResult
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.annotations.NonNull
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.internal.util.HalfSerializer.onComplete
 import io.reactivex.schedulers.Schedulers
 
 
@@ -43,6 +50,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     lateinit var mapFragment:SupportMapFragment
 
     var userName:String = ""
+    var userToken:String? =""
     lateinit var compositeDisposable: CompositeDisposable
     var isUp = false
     override fun onMapReady(map : GoogleMap) {
@@ -85,6 +93,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         mapFragment.getMapAsync(this)
 
         compositeDisposable = CompositeDisposable()
+
+
+        var mUser = FirebaseAuth.getInstance().currentUser
+        mUser!!.getIdToken(true).addOnCompleteListener{task ->
+            if(task.isSuccessful){
+                userToken = task.result?.token
+                Log.i(TAG, "token $userToken")
+
+            }
+            else{
+                //토큰 얻기 실패.
+            }
+        }
 
         compositeDisposable.add(
             PostApi.getPostList()
